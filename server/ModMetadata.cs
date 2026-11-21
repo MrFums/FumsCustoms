@@ -14,7 +14,7 @@ public record ModMetadata : IModMetadata
     public SemanticVersioning.Range SptVersion { get; init; } = new("~4.1.6"); // 4.1.6 minimum, as the client plugin
     public bool HasPrepatcher { get; init; } = false;
     // None. Never list a mod here: in SPT 4.1 one incompatibility stops EVERY mod from loading.
-    // FumsCustoms runs alongside CustomsClassic (MapVariants offers each Customs version).
+    // With CustomsClassic installed, FumsCustoms stands down instead (ClassicCoexist).
     public List<string>? Incompatibilities { get; init; }
     // MapVariants: Customs Fums or Vanilla is picked on the map screen.
     // WTT-ContentBackport: the 1.x items (keys, loot) the map and loot use.

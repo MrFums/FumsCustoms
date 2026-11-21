@@ -1,12 +1,12 @@
 # Fums 1.3 Customs Backport
 
-Customs from version 1.3.0 of the base game (client build 48484), backported to SPT 4.1.6. On the map screen you choose this Customs or the SPT one.
+Customs from version 1.3.0 of the base game (client build 48484), backported to SPT 4.1.6. MapVariants (required) lets you choose this Customs or the SPT one on the map screen.
 
 ## Requirements
 
 - SPT 4.1.6 or a later 4.1 release, on every PC that runs the game, including a Fika headless
 - MapVariants 1.1.0 or later
-- WTT-ContentBackport 2.0.7 or later
+- WTT-ContentBackport 2.0.7 or later, and WTT-CommonLib, which it needs
 
 ## Install
 
