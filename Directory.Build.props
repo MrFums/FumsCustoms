@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <ModVersion>1.0.0</ModVersion>
+    <!-- The SPT install path comes from spt-path.txt (gitignored), never from a tracked file. -->
+    <SPTPathFile>$(MSBuildThisFileDirectory)spt-path.txt</SPTPathFile>
+    <SPTPath Condition="'$(SPTPath)' == '' And Exists('$(SPTPathFile)')">$([System.IO.File]::ReadAllText('$(SPTPathFile)').Trim())</SPTPath>
+    <GameManaged>$(SPTPath)\EscapeFromTarkov_Data\Managed</GameManaged>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <Deterministic>true</Deterministic>
+    <!-- No local paths inside the DLL, and no PDB ships. -->
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PathMap>$(MSBuildThisFileDirectory)=/_/</PathMap>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+</Project>

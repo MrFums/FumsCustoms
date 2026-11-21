@@ -1,0 +1,14 @@
+# Local SPT path: never commit
+spt-path.txt
+
+# Build output and IDE files
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+*.user
+*.suo
+
+# Generated loot data: ships in the release zip only
+server/db/
+server/loot_1x_report.json

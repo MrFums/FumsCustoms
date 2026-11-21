@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>FumsCustoms.Server</AssemblyName>
+    <RootNamespace>Fums.Customs.Server</RootNamespace>
+    <Version>$(ModVersion)</Version>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <!-- IDE design-time builds leave bin/obj here; never compile their generated files. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
+    <SptRuntime>$(SPTPath)\SPT_Runtime</SptRuntime>
+  </PropertyGroup>
+  <Target Name="CheckSptRuntime" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(SPTPath)' == '' Or !Exists('$(SptRuntime)\SPTarkov.Server.Core.dll')"
+           Text="Put the SPT install folder in spt-path.txt next to Directory.Build.props." />
+  </Target>
+  <ItemGroup>
+    <Reference Include="SPTarkov.Server.Core"><HintPath>$(SptRuntime)\SPTarkov.Server.Core.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SPTarkov.Common"><HintPath>$(SptRuntime)\SPTarkov.Common.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SPTarkov.DI"><HintPath>$(SptRuntime)\SPTarkov.DI.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SemanticVersioning"><HintPath>$(SptRuntime)\SemanticVersioning.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SPTarkov.Reflection"><HintPath>$(SptRuntime)\SPTarkov.Reflection.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(SptRuntime)\0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="JetBrains.Annotations"><HintPath>$(SptRuntime)\JetBrains.Annotations.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="db\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="config.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

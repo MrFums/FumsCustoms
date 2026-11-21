@@ -1,0 +1,13 @@
+{
+  "useLiveLoot": true,
+  "looseLootMultiplier": 1.0,
+  "staticLootMultiplier": 1.0,
+  "keepOldSpotsMissingFromDump": true,
+  "fillUnseenNewSpots": false,
+  "use13Exits": true,
+  "use1xRaidSettings": true,
+  "respectBotSpawnMods": true,
+  "bunkhouseKeyOnBots": true,
+  "bunkhouseKeyFleaSale": true,
+  "logRaidSpawns": false
+}
