@@ -30,4 +30,5 @@ The map bundles and the loot data are only in the release zip.
 ## Credits
 
 - The loot, exit and raid data is generated from the SPT 5.0 team's live data dumps.
+- Manimal, whose map backports (Interchange, Lighthouse, Terminal, Labs and Icebreaker) showed how a backport is built.
 - The map is by Battlestate Games.
