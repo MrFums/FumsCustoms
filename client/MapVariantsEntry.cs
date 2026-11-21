@@ -15,7 +15,8 @@ namespace Fums.Customs.Client
     //    maps.json before this plugin loaded;
     //  - copy the map screen preview tiles (tiles/bigmap-backport.png and
     //    bigmap-original.png, shipped next to this DLL) into MapVariants' tiles folder.
-    // With CustomsClassic installed, FumsCustoms stands down instead (see StandDown).
+    // With CustomsClassic installed, FumsCustoms stands down unless MapVariants and
+    // CustomsClassic both support several mods per map (see StandDown).
     internal static class MapVariantsEntry
     {
         private const string MapVariantsGuid = "com.lennoxp90.mapvariants";
@@ -32,14 +33,22 @@ namespace Fums.Customs.Client
             ["standDown"] = "Fums.Customs.Client.BundleSceneLoader:ReleaseIfUnused",
         };
 
-        // MapVariants 1.1.0 manages a map for one mod only, so with CustomsClassic installed
-        // FumsCustoms stands down: Customs offers CustomsClassic's versions, and this plugin
-        // patches nothing (the server mod stands down too). Its maps.json entry is removed,
-        // because MapVariants would otherwise give Customs to FumsCustoms on the next start
-        // and refuse CustomsClassic's own registration. Returns true when standing down.
+        // MapVariants 1.2.0 holds several mods' variants of one map: FumsCustoms stays the
+        // backport (maps.json) and an updated CustomsClassic joins as a source, so Customs
+        // offers Vanilla, Fums and Classic. With an older MapVariants or CustomsClassic a map
+        // belongs to one mod only, so with CustomsClassic installed FumsCustoms stands down:
+        // Customs offers CustomsClassic's versions, and this plugin patches nothing (the server
+        // mod decides the same way). Its maps.json entry is removed, because MapVariants would
+        // otherwise give Customs to FumsCustoms on the next start and refuse CustomsClassic's
+        // own registration. Returns true when standing down.
         internal static bool StandDown()
         {
             if (!Chainloader.PluginInfos.TryGetValue(CustomsClassicGuid, out var classic) || classic?.Instance == null) return false;
+            if (Together(classic.Instance.GetType().Assembly))
+            {
+                Plugin.Log.LogInfo("CustomsClassic is installed too: Customs offers Vanilla, Fums and Classic");
+                return false;
+            }
             var removed = false;
             try
             {
@@ -52,14 +61,35 @@ namespace Fums.Customs.Client
                                     ". Remove its FumsCustoms entry by hand, or CustomsClassic cannot offer Customs.");
             }
             Plugin.Log.LogWarning("CustomsClassic is installed, so FumsCustoms is off: Customs offers CustomsClassic's versions. " +
-                                  "Remove CustomsClassic to play Fums Customs." +
+                                  "Update MapVariants (1.2.0 or later) and CustomsClassic to offer both, or remove CustomsClassic to play Fums Customs." +
                                   (removed ? " FumsCustoms was MapVariants' Customs this session: restart the game before playing Customs." : ""));
             return true;
         }
 
+        // Both sides support sources: MapVariants' public API and CustomsClassic's bridge to it
+        // each have RegisterSource.
+        private static bool Together(Assembly classic)
+        {
+            try
+            {
+                if (!Chainloader.PluginInfos.TryGetValue(MapVariantsGuid, out var info) || info?.Instance == null) return false;
+                const BindingFlags any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+                return info.Instance.GetType().Assembly.GetType("MapVariants.Client.Api.Maps")?.GetMethod("RegisterSource", any) != null
+                    && classic.GetType("CustomsClassic.Client.MapVariantsApi")?.GetMethod("RegisterSource", any) != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         internal static void Ensure()
         {
-            if (!Chainloader.PluginInfos.TryGetValue(MapVariantsGuid, out var info) || info?.Location == null) return;
+            if (!Chainloader.PluginInfos.TryGetValue(MapVariantsGuid, out var info) || info?.Location == null)
+            {
+                Plugin.Log.LogInfo("MapVariants is not installed, so Customs is always Fums Customs. Install MapVariants to choose Fums or Vanilla on the map screen.");
+                return;
+            }
             var dir = Path.GetDirectoryName(info.Location);
             try { CopyTiles(dir); }
             catch (Exception error) { Plugin.Log.LogWarning("MapVariants preview tiles not copied: " + error.Message); }
@@ -137,7 +167,15 @@ namespace Fums.Customs.Client
                 Plugin.Log.LogWarning("Customs was added to MapVariants' maps.json; restart the game to choose Fums or Vanilla Customs");
                 return;
             }
-            if ((bool)isManaged.Invoke(set, new object[] { LocationId })) return;
+            // Already managed: by FumsCustoms, or by another mod. MapVariants 1.2.0 takes the
+            // backport into a map that only sources (CustomsClassic) offer so far, so only then
+            // is it added now; anything else waits for the next start.
+            if ((bool)isManaged.Invoke(set, new object[] { LocationId }))
+            {
+                var existing = set.GetType().GetMethod("For", new[] { typeof(string) })?.Invoke(set, new object[] { LocationId });
+                var hasBackport = existing?.GetType().GetProperty("HasBackport")?.GetValue(existing);
+                if (!(hasBackport is bool has) || has) return;
+            }
             var json = new JObject { ["maps"] = new JArray(Entry()) }.ToString();
             foreach (var map in (Array)parse.Invoke(null, new object[] { json }))
                 add.Invoke(null, new[] { map });

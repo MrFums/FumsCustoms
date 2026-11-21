@@ -158,6 +158,9 @@ public class CustomsLootMod(
                 return built!;
             }, cacheValue: false);
         }
+        // With CustomsClassic beside it, a Classic raid's loot has no transformer to set the
+        // multipliers, so a Fums raid's would carry over: ClassicLootMultipliers puts SPT's back.
+        if (ClassicCoexist.Together) ClassicLootMultipliers.Track(customs.LooseLoot, stockLooseMult, stockStaticMult);
         // Read SPT's raw Customs files for their keys now, at start: the parsed files are
         // freed before anything (a raid, Tushonkapedia's loot index) builds Customs' loot,
         // so that build never holds them on top of SPT's own copy and the 1.x data.
@@ -559,6 +562,26 @@ public class CustomsLootMod(
 
     // ---- startup report --------------------------------------------------------------
 
+    // 1.x Customs loot items that exist only in the 1.x game: no SPT 4.1 item and no
+    // WTT-ContentBackport item defines them (WTT 2.0.7 ships models for some, no items).
+    // Missing these is expected, so the startup report says so instead of warning.
+    private static readonly HashSet<string> OnlyIn1x = new(StringComparer.Ordinal)
+    {
+        "6a3181f178450ec91c0ea1aa", // Item_barter_info_project
+        "6526909b539ee574cb624991", // item_recorder
+        "68dbc04cd700686fbf0d77bd", // item_note_quest_bogatir_patch
+        "68d2fd018c12620073059934", // item_info_note_letter_from_kozlov_02
+        "68d2f4fc17b59ead010894b6", // item_info_note_letter_from_kozlov_03
+        "68d2f4aff8817df4690db3d1", // item_info_note_envelope_opened
+        "689b52ff147eeab4410ecd16", // item_info_note_sectant_corpse
+        "68d2f302be7c1493b90cd3f5", // item_info_note_toReshala_warning
+        "68ea9b43b8469178710c158e", // item_info_note_sectantPriest_eye
+        "68d2f1318c12620073059930", // item_info_note_kozlov_rembox
+        "68d2f09fb350a6169f04bea9", // item_info_note_kozlov_debt
+        "68d2f9bd2ca1a737d107b84d", // item_info_note_bogatir_mention_general
+        "68d2f3375f98276b7503c32e", // item_info_note_kozlov_captured
+    };
+
     private void StartupReport(LooseLoot ll, StaticContainerDetails sc, Dictionary<MongoId, StaticLootDetails> sl)
     {
         try
@@ -572,11 +595,18 @@ public class CustomsLootMod(
                     if (!Known(i.Template)) unknown.Add(i.Template.ToString());
             foreach (var d in sl.Values.SelectMany(v => v.ItemDistribution))
                 if (!Known(d.Tpl)) unknown.Add(d.Tpl.ToString());
+            var expected = unknown.Where(OnlyIn1x.Contains).ToList();
+            var other = unknown.Where(id => !OnlyIn1x.Contains(id)).ToList();
             if (unknown.Count == 0)
                 logger.Success("[FumsCustoms] every 1.x Customs loot item exists in the item database");
-            else
-                logger.Warning($"[FumsCustoms] {unknown.Count} 1.x Customs loot item type(s) are not in the item database and will not spawn: " +
-                               string.Join(", ", unknown.Take(20)) + (unknown.Count > 20 ? ", ..." : ""));
+            if (expected.Count > 0)
+                logger.Info($"[FumsCustoms] {expected.Count} 1.x Customs loot item type(s) will not spawn: " + string.Join(", ", expected) +
+                            ". This is not an error and is expected: these items (lore notes, a voice recorder and a barter item) " +
+                            "exist only in the 1.x game, and neither SPT 4.1 nor WTT-ContentBackport has them. All other loot spawns normally.");
+            if (other.Count > 0)
+                logger.Warning($"[FumsCustoms] {other.Count} 1.x Customs loot item type(s) are not in the item database and will not spawn: " +
+                               string.Join(", ", other.Take(20)) + (other.Count > 20 ? ", ..." : "") +
+                               ". Check that WTT-ContentBackport is installed and up to date.");
         }
         catch (Exception e)
         {

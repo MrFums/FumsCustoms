@@ -16,11 +16,11 @@ public record ModMetadata : IModMetadata
     // None. Never list a mod here: in SPT 4.1 one incompatibility stops EVERY mod from loading.
     // With CustomsClassic installed, FumsCustoms stands down instead (ClassicCoexist).
     public List<string>? Incompatibilities { get; init; }
-    // MapVariants: Customs Fums or Vanilla is picked on the map screen.
     // WTT-ContentBackport: the 1.x items (keys, loot) the map and loot use.
+    // MapVariants is optional: with it, Customs Fums or Vanilla is picked on the map
+    // screen; without it, Customs is always Fums.
     public Dictionary<string, SemanticVersioning.Range>? ModDependencies { get; init; } = new()
     {
-        ["com.lennoxp90.mapvariants"] = new(">=1.1.0"),
         ["com.wtt.contentbackport"] = new(">=2.0.7"),
     };
     public string? Url { get; init; }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+- MapVariants is now optional. Without it, Customs is always Fums Customs.
+- With MapVariants 1.2.0+ and CustomsClassic 1.1.0+ installed, Customs offers Vanilla, Fums and Classic. With older versions, this mod still turns itself off while CustomsClassic is installed.
+- The startup line about 13 Customs loot items that will not spawn now says it is expected and not an error. These items exist only in the 1.x game.
+
 ## 1.0.0
 
 First release.

@@ -8,15 +8,16 @@ using UnityEngine.SceneManagement;
 
 namespace Fums.Customs.Client
 {
-    // Required: MapVariants (Customs Fums or Vanilla on the map screen) and
-    // WTT-ContentBackport (the 1.x items the map uses). Fika and Waypoints load first
-    // when present, so the navmesh and raid patches attach after theirs.
+    // Required: WTT-ContentBackport (the 1.x items the map uses). Optional: MapVariants
+    // (Customs Fums or Vanilla on the map screen; without it Customs is always Fums).
+    // MapVariants, Fika and Waypoints load first when present, so maps.json is read and
+    // the navmesh and raid patches attach after theirs.
     // SPT 4.1.6 is the minimum: older SPT client files (for example 4.1.2) lack the
     // reverse-patch attribute this plugin uses, and Customs would never finish loading.
     // BepInEx skips the plugin with an error instead, and Customs loads vanilla.
     [BepInPlugin(Guid, DisplayName, Version)]
     [BepInDependency("com.SPT.core", "4.1.6")]
-    [BepInDependency("com.lennoxp90.mapvariants", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency("com.lennoxp90.mapvariants", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.wtt.contentbackport", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("com.fika.core", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("xyz.drakia.waypoints", BepInDependency.DependencyFlags.SoftDependency)]
@@ -27,7 +28,7 @@ namespace Fums.Customs.Client
     {
         public const string Guid = "com.fums.customs";
         public const string DisplayName = "FumsCustoms";
-        public const string Version = "1.0.0";
+        public const string Version = "1.0.1";
 
         // Geometry scenes come from the live backport, plus Custom_Sound (1.3 audio
         // graph) and custom_DesignMain (1.3 exfils, quest zones, triggers; it needs the
