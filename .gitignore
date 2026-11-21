@@ -1,13 +1,21 @@
 # Local SPT path: never commit
 spt-path.txt
 
-# Build output and IDE files
+# Build output
 **/bin/
 **/obj/
+dist/
+build.ps1
+
+# Editor settings
 **/.vs/
+**/.vscode/
 **/.idea/
 *.user
 *.suo
+
+# Local only: release notes and the upload copy
+FumsCustoms Files/
 
 # Generated loot data: ships in the release zip only
 server/db/
