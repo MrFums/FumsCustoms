@@ -37,9 +37,12 @@ namespace Fums.Customs.Client
         // patches nothing (the server mod stands down too). Its maps.json entry is removed,
         // because MapVariants would otherwise give Customs to FumsCustoms on the next start
         // and refuse CustomsClassic's own registration. Returns true when standing down.
+        // With MapVariants 1.2.0 and CustomsClassic 1.1.0, Classic is a source beside this
+        // backport, so both are offered and nothing stands down.
         internal static bool StandDown()
         {
             if (!Chainloader.PluginInfos.TryGetValue(CustomsClassicGuid, out var classic) || classic?.Instance == null) return false;
+            if (MapsApi()?.GetMethod("RegisterSource") != null && classic.Metadata.Version >= new Version(1, 1, 0)) return false;
             var removed = false;
             try
             {
@@ -60,6 +63,7 @@ namespace Fums.Customs.Client
         internal static void Ensure()
         {
             if (!Chainloader.PluginInfos.TryGetValue(MapVariantsGuid, out var info) || info?.Location == null) return;
+            if (RegisterBackport()) return;
             var dir = Path.GetDirectoryName(info.Location);
             try { CopyTiles(dir); }
             catch (Exception error) { Plugin.Log.LogWarning("MapVariants preview tiles not copied: " + error.Message); }
@@ -123,7 +127,29 @@ namespace Fums.Customs.Client
             return true;
         }
 
-        // MapVariants' own maps.json parser and registration, as at its start.
+        private static Type MapsApi()
+            => AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("MapVariants.Client.Api.Maps", false)).FirstOrDefault(t => t != null);
+
+        // MapVariants 1.2.0 and up: the same entry through its public Maps.RegisterBackport, with this
+        // plugin's own tiles, so neither maps.json nor MapVariants' tiles folder is written and no
+        // restart is needed. False before 1.2.0, and then the maps.json route below is used.
+        private static bool RegisterBackport()
+        {
+            var register = MapsApi()?.GetMethod("RegisterBackport");
+            if (register == null) return false;
+            var tiles = Path.Combine(Plugin.Root, "tiles");
+            string Tile(string name) { var path = Path.Combine(tiles, name); return File.Exists(path) ? path : null; }
+            var ok = register.Invoke(null, new object[]
+            {
+                new[] { LocationId }, Plugin.Guid, "Customs", "Fums", "Vanilla",
+                "Fums.Customs.Client.BundleSceneLoader:ReleaseIfUnused",
+                Tile(LocationId + "-backport.png"), Tile(LocationId + "-original.png"),
+            }) is true;
+            if (!ok) Plugin.Log.LogError("MapVariants refused Customs, so the map screen will not offer Fums Customs; its log says why.");
+            return true;
+        }
+
+        // MapVariants' own maps.json parser and registration, as at its start (before 1.2.0).
         private static void RegisterNow(Assembly mapVariants)
         {
             var mapsFile = mapVariants?.GetType("MapVariants.Client.MapsFile");
