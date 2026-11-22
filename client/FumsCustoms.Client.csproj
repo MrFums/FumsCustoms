@@ -15,6 +15,7 @@
   <ItemGroup>
     <Reference Include="BepInEx"><HintPath>$(SPTPath)\BepInEx\core\BepInEx.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="0Harmony"><HintPath>$(SPTPath)\BepInEx\core\0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="spt-common"><HintPath>$(SPTPath)\BepInEx\plugins\spt\spt-common.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="spt-reflection"><HintPath>$(SPTPath)\BepInEx\plugins\spt\spt-reflection.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Assembly-CSharp"><HintPath>$(GameManaged)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Comfort"><HintPath>$(GameManaged)\Comfort.dll</HintPath><Private>false</Private></Reference>

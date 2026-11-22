@@ -59,6 +59,9 @@ namespace Fums.Customs.Client
             Log = Logger;
             Root = Path.GetDirectoryName(Info.Location);
             if (MapVariantsEntry.StandDown()) return;
+            // The server mod decides too (ServerStatus): a server with Fums Customs off means this
+            // client must not load the 1.3 scenes, or loot binds to the wrong map.
+            if (ServerStatus.StandDownAtStart()) return;
             Enabled = Config.Bind("General", "Enabled", true,
                 "Load the backported live Customs scenes in place of the vanilla ones.");
             ReplacedScenes = Config.Bind("General", "ReplacedScenes", DefaultReplacedScenes,

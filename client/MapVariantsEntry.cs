@@ -66,6 +66,22 @@ namespace Fums.Customs.Client
             return true;
         }
 
+        // Takes FumsCustoms' entry out of MapVariants' maps.json, for a stand-down decided elsewhere
+        // (ServerStatus: the server has Fums Customs off). True when an entry was removed.
+        internal static bool RemoveEntry()
+        {
+            try
+            {
+                return Chainloader.PluginInfos.TryGetValue(MapVariantsGuid, out var info) && info?.Location != null
+                    && RemoveFromMapsFile(Path.Combine(Path.GetDirectoryName(info.Location), "maps.json"));
+            }
+            catch (Exception error)
+            {
+                Plugin.Log.LogError("Could not remove Customs from MapVariants' maps.json: " + error.Message);
+                return false;
+            }
+        }
+
         // Both sides support sources: MapVariants' public API and CustomsClassic's bridge to it
         // each have RegisterSource.
         private static bool Together(Assembly classic)
@@ -128,7 +144,7 @@ namespace Fums.Customs.Client
             if (ours.Count == 0) return false;
             foreach (var entry in ours) entry.Remove();
             File.WriteAllText(path, root.ToString() + Environment.NewLine);
-            Plugin.Log.LogInfo("Removed Customs from MapVariants' maps.json while CustomsClassic is installed");
+            Plugin.Log.LogInfo("Removed Customs from MapVariants' maps.json while Fums Customs is off");
             return true;
         }
 

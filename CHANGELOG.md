@@ -4,6 +4,7 @@
 
 - MapVariants is now optional. Without it, Customs is always Fums Customs.
 - With MapVariants 1.2.0+ and CustomsClassic 1.1.0+ installed, Customs offers Vanilla, Fums and Classic. With older versions, this mod still turns itself off while CustomsClassic is installed.
+- Fixed: with CustomsClassic on the server only (or no FumsCustoms on the server), clients still loaded this Customs over the server's other Customs data. Most containers then had no loot and opened like doors. Each client now asks the server, and loads vanilla Customs unless the server serves this one. Install the same version on the server and every client, Fika headless included.
 - The startup line about 13 Customs loot items that will not spawn now says it is expected and not an error. These items exist only in the 1.x game.
 
 ## 1.0.0

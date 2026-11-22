@@ -39,6 +39,8 @@ namespace Fums.Customs.Client
         {
             if (!Plugin.Enabled.Value || preset == null || _busy) return true;
             if (!string.Equals(preset.ServerName, ServerName, StringComparison.OrdinalIgnoreCase)) return true;
+            // The 1.3 scenes only on a server that serves Fums Customs' data (ServerStatus).
+            if (!ServerStatus.AllowsRaid()) return true;
             if (!File.Exists(BundlePath))
             {
                 Plugin.Log.LogWarning("Backport bundle not found, loading vanilla Customs: " + BundlePath);
