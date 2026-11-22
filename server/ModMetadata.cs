@@ -6,7 +6,7 @@ namespace Fums.Customs.Server;
 [UsedImplicitly]
 public record ModMetadata : IModMetadata
 {
-    public string ModGuid { get; init; } = "com.fums.customs.server";
+    public string ModGuid { get; init; } = "com.fums.customs";
     public string Name { get; init; } = "FumsCustoms";
     public string Author { get; init; } = "Fums";
     public List<string>? Contributors { get; init; }
