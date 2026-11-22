@@ -6,6 +6,7 @@ Customs from version 1.3.0 of the base game (client build 48484), backported to 
 
 - SPT 4.1.6 or a later 4.1 release, on every PC that runs the game, including a Fika headless
 - WTT-ContentBackport 2.0.7 or later, and WTT-CommonLib, which it needs
+- The same FumsCustoms version on the server and on every client, Fika headless included. A client loads the 1.3 map only when the server says it serves Fums Customs; otherwise it loads vanilla Customs.
 - Optional: MapVariants 1.1.0 or later, to choose Fums or Vanilla Customs on the map screen. Without it, Customs is always Fums.
 
 ## Install
