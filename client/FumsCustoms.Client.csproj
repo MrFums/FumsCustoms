@@ -32,7 +32,19 @@
     <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(GameManaged)\UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.ParticleSystemModule"><HintPath>$(GameManaged)\UnityEngine.ParticleSystemModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.TerrainModule"><HintPath>$(GameManaged)\UnityEngine.TerrainModule.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="Fika.Core"><HintPath>$(SPTPath)\BepInEx\plugins\Fika\Fika.Core.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="DissonanceVoip"><HintPath>$(GameManaged)\DissonanceVoip.dll</HintPath><Private>false</Private></Reference>
+    <!-- NEVER reference Fika.Core here. Without Fika, one Fika type in this DLL makes other
+         mods' type scans throw, and every item stack shows 1 (1.0.3 bug). Fika code goes in
+         ../fika, which is built first and embedded below. -->
+    <ProjectReference Include="..\fika\FumsCustoms.Fika.csproj" ReferenceOutputAssembly="false" Private="false" />
   </ItemGroup>
+  <Target Name="EmbedFikaSync" AfterTargets="ResolveProjectReferences" BeforeTargets="PrepareResources">
+    <MSBuild Projects="..\fika\FumsCustoms.Fika.csproj" Targets="GetTargetPath">
+      <Output TaskParameter="TargetOutputs" ItemName="_FikaSyncDll" />
+    </MSBuild>
+    <Error Condition="!Exists('@(_FikaSyncDll)')" Text="FumsCustoms.Fika.dll was not built: @(_FikaSyncDll)" />
+    <ItemGroup>
+      <EmbeddedResource Include="@(_FikaSyncDll)" LogicalName="FumsCustoms.Fika.dll" />
+    </ItemGroup>
+  </Target>
 </Project>

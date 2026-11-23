@@ -1,96 +1,76 @@
 using System;
-using System.Runtime.CompilerServices;
+using System.IO;
+using System.Reflection;
 using EFT.Interactive;
-using Fika.Core.Main.Utils;
-using Fika.Core.Modding;
-using Fika.Core.Modding.Events;
-using Fika.Core.Networking;
-using Fika.Core.Networking.LiteNetLib;
-using Fika.Core.Networking.LiteNetLib.Utils;
 
 namespace Fums.Customs.Client
 {
-    // Fika: the raid host runs the bots, so it is the host that unlocks and opens padlocked
-    // doors (Padlocks / PadlockWatcher). Fika does not send a door change made in code, and a
-    // client ignores a bot's "open" while its own copy of the door is still locked, so the bot
-    // walks through a door that looks shut and padlocked there. The host sends every state
-    // change of a padlocked door; clients apply it. Only touched when Fika is loaded.
-    internal static class PadlockSyncFika
-    {
-        private static IFikaNetworkManager _manager;
-
-        internal static void Init()
-        {
-            FikaEventDispatcher.SubscribeEvent<FikaNetworkManagerCreatedEvent>(e =>
-            {
-                _manager = e.Manager;
-                e.Manager.RegisterPacket<PadlockDoorPacket>(OnPacket);
-            });
-        }
-
-        internal static bool IsServer => FikaBackendUtils.IsServer;
-        internal static bool IsClient => FikaBackendUtils.IsClient;
-
-        internal static void Send(string id, EDoorState state)
-        {
-            if (_manager == null || !FikaBackendUtils.IsServer) return;
-            var packet = new PadlockDoorPacket { DoorId = id, State = (byte)state };
-            _manager.SendData(ref packet, DeliveryMethod.ReliableOrdered);
-        }
-
-        private static void OnPacket(PadlockDoorPacket p)
-        {
-            if (!FikaBackendUtils.IsClient) return;
-            try { Padlocks.ApplyHostState(p.DoorId, (EDoorState)p.State); }
-            catch (Exception e) { Plugin.Log.LogError("Padlock sync: " + e); }
-        }
-    }
-
-    internal sealed class PadlockDoorPacket : INetSerializable
-    {
-        public string DoorId;
-        public byte State;
-
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(DoorId ?? "");
-            writer.Put(State);
-        }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            DoorId = reader.GetString();
-            State = reader.GetByte();
-        }
-    }
-
-    // Keeps Fika's types out of everything else, so FumsCustoms still runs without Fika.
+    // Fika door sync for padlocked doors. The Fika code lives in its own assembly
+    // (fika/PadlockSyncFika.cs, FumsCustoms.Fika), embedded here as a resource and loaded
+    // only when Fika is installed.
+    //
+    // Never put a Fika type in this assembly, not even in a field or interface that never
+    // runs: other mods (Newtonsoft's UnityConverterInitializer) scan every loaded type, and
+    // without Fika that scan throws a TypeLoadException. In 1.0.3 it stopped JSON setup, and
+    // every item stack (money, ammo) showed 1.
     internal static class PadlockSync
     {
-        private static bool _present;
+        private const string Resource = "FumsCustoms.Fika.dll";
+        private const string SyncType = "Fums.Customs.Client.PadlockSyncFika";
+
+        private static Func<bool> _isClient;
+        private static Action<string, byte> _send;
 
         internal static void Init()
         {
-            try { _present = HarmonyLib.AccessTools.TypeByName("Fika.Core.Modding.FikaEventDispatcher") != null && InitFika(); }
-            catch (Exception e) { _present = false; Plugin.Log.LogInfo("Padlock sync off: " + e.Message); }
+            try
+            {
+                if (HarmonyLib.AccessTools.TypeByName("Fika.Core.Modding.FikaEventDispatcher") == null) return;
+
+                byte[] raw;
+                using (var s = typeof(PadlockSync).Assembly.GetManifestResourceStream(Resource))
+                {
+                    if (s == null) { Plugin.Log.LogWarning("Padlock sync off: " + Resource + " not embedded"); return; }
+                    using (var m = new MemoryStream()) { s.CopyTo(m); raw = m.ToArray(); }
+                }
+
+                var t = Assembly.Load(raw).GetType(SyncType, true);
+                var init = (Action<Action<string, byte>>)Delegate.CreateDelegate(
+                    typeof(Action<Action<string, byte>>), t.GetMethod("Init"));
+                var isClient = (Func<bool>)Delegate.CreateDelegate(typeof(Func<bool>), t.GetMethod("IsClient"));
+                var send = (Action<string, byte>)Delegate.CreateDelegate(typeof(Action<string, byte>), t.GetMethod("Send"));
+
+                init(Apply);
+                _isClient = isClient;
+                _send = send;
+                Plugin.Log.LogInfo("Padlock sync on (Fika)");
+            }
+            catch (Exception e)
+            {
+                _isClient = null;
+                _send = null;
+                Plugin.Log.LogInfo("Padlock sync off: " + e.Message);
+            }
         }
 
-        internal static bool IsClient() => _present && IsClientFika();
+        internal static bool IsClient()
+        {
+            var f = _isClient;
+            return f != null && f();
+        }
 
         internal static void HostSend(string id, EDoorState state)
         {
-            if (!_present) return;
-            try { SendFika(id, state); }
+            var f = _send;
+            if (f == null) return;
+            try { f(id, (byte)state); }
             catch (Exception e) { Plugin.Log.LogWarning("Padlock sync send: " + e.Message); }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool InitFika() { PadlockSyncFika.Init(); return true; }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool IsClientFika() => PadlockSyncFika.IsClient;
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void SendFika(string id, EDoorState state) => PadlockSyncFika.Send(id, state);
+        private static void Apply(string id, byte state)
+        {
+            try { Padlocks.ApplyHostState(id, (EDoorState)state); }
+            catch (Exception e) { Plugin.Log.LogError("Padlock sync: " + e); }
+        }
     }
 }

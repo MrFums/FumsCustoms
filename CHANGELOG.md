@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- Fixed: on installs without Fika, item stacks (money, ammo, magazines) could show as 1 and raids would not start. The Fika door sync now loads only when Fika is installed; Fika remains optional.
+
 ## 1.0.3
 
 - Fixed: in rare cases, distant bots did not show until they fired or were hit, and sound in some rooms was wrong. Some map data was lost when the map was converted; it is restored.

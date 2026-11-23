@@ -28,6 +28,8 @@ dotnet build client -c Release
 dotnet build server -c Release
 ```
 
+The client build also builds `fika/` (the Fika door sync) and embeds it in `FumsCustoms.dll`, so the SPT folder needs Fika's `BepInEx/plugins/Fika/Fika.Core.dll` to build. The mod itself does not need Fika.
+
 The map bundles and the loot data are only in the release zip.
 
 ## Credits
