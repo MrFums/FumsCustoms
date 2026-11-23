@@ -8,6 +8,7 @@ Customs from version 1.3.0 of the base game (client build 48484), backported to 
 - WTT-ContentBackport 2.0.7 or later, and WTT-CommonLib, which it needs
 - The same FumsCustoms version on the server and on every client, Fika headless included. A client loads the 1.3 map only when the server says it serves Fums Customs; otherwise it loads vanilla Customs.
 - Optional: MapVariants 1.1.0 or later, to choose Fums or Vanilla Customs on the map screen. Without it, Customs is always Fums.
+- Optional: Fika. Works with or without it; with Fika, padlocked doors opened by bots show open on every client.
 
 ## Install
 
