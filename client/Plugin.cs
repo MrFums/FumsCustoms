@@ -28,7 +28,7 @@ namespace Fums.Customs.Client
     {
         public const string Guid = "com.fums.customs";
         public const string DisplayName = "FumsCustoms";
-        public const string Version = "1.0.1";
+        public const string Version = "1.0.3";
 
         // Geometry scenes come from the live backport, plus Custom_Sound (1.3 audio
         // graph) and custom_DesignMain (1.3 exfils, quest zones, triggers; it needs the
@@ -88,6 +88,7 @@ namespace Fums.Customs.Client
             EnablePatch(new LoadScenePatch());
             EnablePatch(new BrokenLootGuard());
             EnablePatch(new DoorLinkGuard());
+            EnablePatch(new LockedDoorCarvers());
             EnablePatch(new GrenadePlaceGuard());
             EnablePatch(new CullingSidecarPatch());
             EnablePatch(new BarbedWireSoundGuard());
@@ -99,6 +100,8 @@ namespace Fums.Customs.Client
             EnablePatch(new SpatialBakeRedirectPatch());
             EnablePatch(new LiveNavMeshInitPatch());
             gameObject.AddComponent<CensusTicker>();
+            gameObject.AddComponent<PadlockWatcher>();
+            PadlockSync.Init();
             CullingPack.Begin(this);
             SceneManager.sceneLoaded += CullingSwitch.OnSceneLoaded;
             StartupDiagnostics.Enable();

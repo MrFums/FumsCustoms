@@ -32,5 +32,7 @@
     <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(GameManaged)\UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.ParticleSystemModule"><HintPath>$(GameManaged)\UnityEngine.ParticleSystemModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.TerrainModule"><HintPath>$(GameManaged)\UnityEngine.TerrainModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Fika.Core"><HintPath>$(SPTPath)\BepInEx\plugins\Fika\Fika.Core.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="DissonanceVoip"><HintPath>$(GameManaged)\DissonanceVoip.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>
 </Project>

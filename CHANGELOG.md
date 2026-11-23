@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.3
+
+- Fixed: in rare cases, distant bots did not show until they fired or were hit, and sound in some rooms was wrong. Some map data was lost when the map was converted; it is restored.
+- Bots no longer walk into locked doors. While a door is locked, its doorway is taken out of the bot navigation mesh, so bots plan around it. It comes back once the door is unlocked.
+- Bots can now open the 5 padlocked doors (Old Gas to Customs, Big Red, Dorms, Pump Station, Abandoned Plant). A bot that reaches one from the padlock side knocks the padlock off with a gunshot from its own gun, opens the door and goes through. No real bullet is fired. From the other side the door stays locked, its doorway is taken out of the navigation mesh for 90 seconds, and the bot finds another way. Works with any AI mod, with or without ORBIT.
+- Bot navigation mesh rebaked: the Old Gas to Customs and Big Red doorways were too narrow for bots. Bots can now path through both.
+- Fika: padlocked doors opened by bots are now shown open, with the padlock gone, on every client.
+- Bots do not open padlocked crates.
+
 ## 1.0.1
 
 - MapVariants is now optional. Without it, Customs is always Fums Customs.
