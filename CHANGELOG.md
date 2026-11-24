@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5
+
+- Fixed: the AGS-30 and NSV Utyos mounted guns. Using one left you stuck on it: you could not fire or get off. Some map data was lost when the map was converted; it is restored.
+- MapVariants 1.2.0+: Customs is registered through MapVariants' public API, so `maps.json` is no longer edited and no restart is needed. The server also tells MapVariants which client plugin Customs belongs to, so a client with another mod's Customs falls back to Vanilla instead of loading the wrong map. Thanks to LennoxP90.
+
 ## 1.0.4
 
 - Fixed: on installs without Fika, item stacks (money, ammo, magazines) could show as 1 and raids would not start. The Fika door sync now loads only when Fika is installed; Fika remains optional.

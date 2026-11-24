@@ -255,9 +255,13 @@ namespace Fums.Customs.Client
     // Padlocked doors are left in the navmesh (LockedDoorCarvers does not carve them), so
     // any bot (vanilla, SAIN, ORBIT) may path through one like a normal door. When a bot
     // reaches a padlocked door that is still locked, it is unlocked (padlock pops, shot
-    // sound, see Padlocks.Watch) and the bot's own door logic opens it. Runs on every
-    // machine: Fika clients see the same bot at the door, so they unlock their copy too
-    // (Fika does not send an Unlock() made in code).
+    // sound, see Padlocks.Watch) and the bot's own door logic opens it.
+    //
+    // It acts only where the bots run: single player, or the Fika host/headless. It is
+    // added on every machine, but on a Fika client the bots are observed players with
+    // IsAI false, so it finds no bot there and does nothing. Clients get the door
+    // instead from the host's PadlockDoorPacket (PadlockSync -> Padlocks.ApplyHostState),
+    // because Fika does not send an Unlock() or Open() made in code.
     internal sealed class PadlockWatcher : MonoBehaviour
     {
         private const float Interval = 0.25f;

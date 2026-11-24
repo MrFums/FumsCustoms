@@ -40,6 +40,14 @@ namespace Fums.Customs.Client
             {
                 Plugin.Log.LogError("LOD fixup failed for " + scene.name + ": " + error);
             }
+            try
+            {
+                RewireStationaryWeapons(scene);
+            }
+            catch (Exception error)
+            {
+                Plugin.Log.LogError("Stationary weapon fixup failed for " + scene.name + ": " + error);
+            }
             if (!Plugin.HideDecals.Value) return;
             try
             {
@@ -57,6 +65,31 @@ namespace Fums.Customs.Client
             {
                 Plugin.Log.LogError("Scene fixups failed for " + scene.name + ": " + error);
             }
+        }
+
+        // Mounted guns (AGS-30, NSV Utyos): StationaryWeapon.Machinery is typed WeaponMachinery,
+        // but the rebake stubs for AGSMachinery/UtesMachinery derived from MonoBehaviour, so Unity
+        // dropped the reference and the bundle ships it null. Once a player or bot mounts the gun,
+        // ManualUpdate calls Machinery.UpdateJoints() (and the AGS also Machinery.OnRotation())
+        // every frame: a NullReferenceException each frame left the player stuck in the mounted pose,
+        // unable to fire or leave. The machinery component sits on the same GameObject.
+        private static void RewireStationaryWeapons(Scene scene)
+        {
+            int fixedCount = 0, missing = 0;
+            foreach (var root in scene.GetRootGameObjects())
+                foreach (var weapon in root.GetComponentsInChildren<EFT.Interactive.StationaryWeapon>(true))
+                {
+                    if (weapon.Machinery != null) continue;
+                    weapon.Machinery = weapon.GetComponent<EFT.Animations.WeaponMachinery>();
+                    if (weapon.Machinery != null) fixedCount++;
+                    else
+                    {
+                        missing++;
+                        Plugin.Log.LogWarning($"Stationary weapon {weapon.Id} ({weapon.name}) has no machinery component");
+                    }
+                }
+            if (fixedCount > 0 || missing > 0)
+                Plugin.Verbose($"Fixups: {scene.name} rewired machinery on {fixedCount} stationary weapon(s), {missing} without");
         }
 
         // LOD0 takes over the last LOD's range; renderers only in the far LODs are switched off
