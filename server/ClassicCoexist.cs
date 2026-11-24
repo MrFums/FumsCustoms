@@ -15,10 +15,15 @@ namespace Fums.Customs.Server;
 //   container types, bunkhouse key), and CustomsClassic's Customs and Vanilla Customs run
 //   exactly as without FumsCustoms. The client plugin decides the same way.
 // Nothing is declared incompatible: in SPT 4.1 one incompatibility stops every mod loading.
+// It also declares its client plugin to MapVariants 1.2.0 (thanks to LennoxP90), so a client with
+// another mod's Customs backport is caught on the map screen instead of loading its scenes over
+// this mod's data.
 [Injectable(TypePriority = OnLoadOrder.Preload), UsedImplicitly]
-public class ClassicCoexist(ISptLogger<ClassicCoexist> logger) : IOnLoad
+public class ClassicCoexist(IServiceProvider provider, ISptLogger<ClassicCoexist> logger) : IOnLoad
 {
     private const string ClassicAssembly = "CustomsClassic.Server";
+    private const string ProvidersType = "MapVariants.Server.Variants.Providers";
+    private const string ClientPluginGuid = "com.fums.customs";
     private static bool? _present, _together;
 
     // Mod assemblies are all loaded before any OnLoad runs, so these are valid from the first one.
@@ -26,7 +31,7 @@ public class ClassicCoexist(ISptLogger<ClassicCoexist> logger) : IOnLoad
 
     // Both sides support sources: MapVariants' Providers and CustomsClassic's bridge each have RegisterSource.
     internal static bool Together => _together ??= ClassicPresent
-        && HasMethod("MapVariants.Server.Variants.Providers", "RegisterSource")
+        && HasMethod(ProvidersType, "RegisterSource")
         && HasMethod("CustomsClassic.Server.MapVariantsBridge", "RegisterSource");
 
     // True when CustomsClassic is installed and the two cannot both be offered.
@@ -39,10 +44,33 @@ public class ClassicCoexist(ISptLogger<ClassicCoexist> logger) : IOnLoad
     public Task OnLoadAsync(CancellationToken cancellationToken)
     {
         if (FumsOff)
+        {
             logger.Warning("[FumsCustoms] CustomsClassic is installed, so FumsCustoms is off: Customs offers CustomsClassic's versions. " +
                            "Update MapVariants (1.2.0 or later) and CustomsClassic to offer both, or remove CustomsClassic to play Fums Customs.");
-        else if (Together)
+            return Task.CompletedTask;
+        }
+        if (Together)
             logger.Info("[FumsCustoms] CustomsClassic is installed too: Customs offers Vanilla, Fums and Classic");
+        Declare();
         return Task.CompletedTask;
+    }
+
+    // MapVariants 1.2.0 and up: names this mod's client plugin for Customs, so the map screen can tell
+    // a client with another mod's Customs backport. Absent before that, and then nothing is compared.
+    private void Declare()
+    {
+        try
+        {
+            var type = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType(ProvidersType, false)).FirstOrDefault(t => t != null);
+            var declare = type?.GetMethod("DeclarePlugin", [typeof(string), typeof(string)]);
+            var providers = declare == null ? null : provider.GetService(type!);
+            if (providers == null) return;
+            declare!.Invoke(providers, ["bigmap", ClientPluginGuid]);
+            logger.Info($"[FumsCustoms] declared {ClientPluginGuid} as Customs' client plugin to MapVariants");
+        }
+        catch (Exception error)
+        {
+            logger.Warning("[FumsCustoms] could not declare the client plugin to MapVariants: " + error.Message);
+        }
     }
 }
