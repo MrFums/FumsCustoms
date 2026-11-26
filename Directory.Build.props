@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <ModVersion>1.0.6</ModVersion>
+    <ModVersion>1.0.7</ModVersion>
     <!-- The SPT install path comes from spt-path.txt (gitignored), never from a tracked file. -->
     <SPTPathFile>$(MSBuildThisFileDirectory)spt-path.txt</SPTPathFile>
     <SPTPath Condition="'$(SPTPath)' == '' And Exists('$(SPTPathFile)')">$([System.IO.File]::ReadAllText('$(SPTPathFile)').Trim())</SPTPath>

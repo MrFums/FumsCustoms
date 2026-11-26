@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.7-beta.1
+
+- Fixed the sniper zones making no gunshot sound, so their shots felt delayed.
+- Fixed graffiti and other painted decals not showing, including the sniper zone warning signs.
+- Fixed doors not showing a hit effect when shot.
+
 ## 1.0.6
 
 - Fixed Scav raids sometimes failing to start.

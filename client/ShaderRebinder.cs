@@ -193,8 +193,9 @@ namespace Fums.Customs.Client
                         rebound += Rebind(renderer.sharedMaterials);
                     foreach (var terrain in root.GetComponentsInChildren<Terrain>(true))
                         rebound += RebindTerrain(terrain);
+                    rebound += RebindHeldMaterials(root);
                 }
-                Plugin.Verbose($"Shaders: {scene.name} rebound {rebound} material(s), keywords enabled so far {KeywordsEnabled}");
+                Plugin.Verbose($"Shaders: {scene.name} rebound {rebound} material(s), decals {DecalShaderRebind.Rebound} so far, keywords enabled so far {KeywordsEnabled}");
                 var report = Missing.Where(n => n != "Hidden/InternalErrorShader").ToList();
                 if (Missing.Count > missingBefore && report.Count > 0)
                     Plugin.Log.LogWarning("No game shader for: " + string.Join(", ", report));
@@ -203,6 +204,23 @@ namespace Fums.Customs.Client
             {
                 Plugin.Log.LogError("Shader rebind failed for " + scene.name + ": " + error);
             }
+        }
+
+        // Materials held by script fields and drawn later by reference: broken
+        // window pieces (WindowBreaker.Material, when it is not the window
+        // renderer's own material) and the stationary weapons' muzzle jet and
+        // smoke. Static decals copy their material on enable, so DecalShaderRebind
+        // handles them in Awake instead.
+        private static int RebindHeldMaterials(GameObject root)
+        {
+            int count = 0;
+            foreach (var window in root.GetComponentsInChildren<EFT.Interactive.WindowBreaker>(true))
+                if (window.Material != null) count += Rebind(new[] { window.Material });
+            foreach (var muzzle in root.GetComponentsInChildren<MuzzleManager>(true))
+                if (muzzle.JetMaterial != null) count += Rebind(new[] { muzzle.JetMaterial });
+            foreach (var smoke in root.GetComponentsInChildren<MuzzleSmoke>(true))
+                if (smoke.Material != null) count += Rebind(new[] { smoke.Material });
+            return count;
         }
 
         private static int RebindTerrain(Terrain terrain)
