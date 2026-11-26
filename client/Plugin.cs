@@ -28,7 +28,7 @@ namespace Fums.Customs.Client
     {
         public const string Guid = "com.fums.customs";
         public const string DisplayName = "FumsCustoms";
-        public const string Version = "1.0.5";
+        public const string Version = "1.0.6";
 
         // Geometry scenes come from the live backport, plus Custom_Sound (1.3 audio
         // graph) and custom_DesignMain (1.3 exfils, quest zones, triggers; it needs the
@@ -107,6 +107,7 @@ namespace Fums.Customs.Client
             StartupDiagnostics.Enable();
             SceneManager.sceneLoaded += ShaderRebinder.OnSceneLoaded;
             SceneManager.sceneLoaded += SceneFixups.OnSceneLoaded;
+            SceneManager.sceneLoaded += LocationSceneLists.OnSceneLoaded;
             SceneManager.sceneLoaded += ExitNames.OnSceneLoaded;
             SceneManager.sceneLoaded += SeasonalMountains.OnSceneLoaded;
             SceneManager.sceneLoaded += MixerBinder.OnSceneLoaded;
