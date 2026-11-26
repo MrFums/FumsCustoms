@@ -2,9 +2,7 @@
 
 ## 1.0.6
 
-- Fixed: Scav raids on Customs did not start properly. There was no timer and no extracts, and bots stayed asleep. The map's Scav extracts were missing from the list the game reads at raid start. Thanks to Bigfoot for the report and logs.
-- Fixed: the same gap also left out the secret extracts, the co-op extract, the minefields and the sniper zones. All of them now work as on the original map.
-- The map's state-synced objects and light groups are now registered with the game too, as on the original map.
+- Fixed Scav raids sometimes failing to start.
 
 - Fixed: the AGS-30 and NSV Utyos mounted guns. Using one left you stuck on it: you could not fire or get off. Some map data was lost when the map was converted; it is restored.
 - MapVariants 1.2.0+: Customs is registered through MapVariants' public API, so `maps.json` is no longer edited and no restart is needed. The server also tells MapVariants which client plugin Customs belongs to, so a client with another mod's Customs falls back to Vanilla instead of loading the wrong map. Thanks to LennoxP90.
