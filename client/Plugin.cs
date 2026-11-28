@@ -52,6 +52,7 @@ namespace Fums.Customs.Client
         internal static ConfigEntry<bool> HideDecals;
         internal static ConfigEntry<bool> UseLiveNavMesh;
         internal static ConfigEntry<bool> OcclusionCulling;
+        internal static ConfigEntry<bool> HorizonMountains;
         internal static ConfigEntry<bool> VerboseLogs;
 
         private void Awake()
@@ -77,6 +78,9 @@ namespace Fums.Customs.Client
                 "Bot zones, spawns and patrols stay vanilla.");
             OcclusionCulling = Config.Bind("Rendering", "OcclusionCulling", true,
                 "Use the live 1.3 occlusion culling bake for the backport scenes. Turn off if geometry goes missing.");
+            HorizonMountains = Config.Bind("Rendering", "HorizonMountains", false,
+                "Show the 1.3 horizon mountain ring. Off by default: 0.16.9 has no such ring, and without live's " +
+                "1.3-only view-angle script it leaves a flat grey band on the horizon from high places.");
             VerboseLogs = Config.Bind("Diagnostics", "VerboseLogs", false,
                 "Extra log lines for testing: per-scene census, shader, audio, navmesh and exit reports, material keyword " +
                 "checks, fire audio environment changes, sources the ambient range gate mutes. Off: only problems and startup lines. " +

@@ -25,6 +25,7 @@ namespace Fums.Customs.Server;
 // addtoItemBlacklist flag bans it from the flea. On live it can be sold on the flea
 // (SPT 5.0: CanSellOnRagfair true, not on any blacklist).
 //
+// Bot loot for this key and the two 1.x Customs door keys is in KeysOnBots.cs.
 // Bot chances come from SPT 5.0's bot data (database/bots/types), which counts what
 // live bots carried. The generation weights of a section add up to the number of bots
 // sampled, and an item's weight is how many of them carried it:
@@ -37,7 +38,7 @@ namespace Fums.Customs.Server;
 // still have room (Reshala has no vest or backpack; his loot fills his pockets). It
 // does not depend on loadout or loot mods' tables (APBS, Gravity), and their loot
 // filters only edit the pools, not items already placed.
-// Config: bunkhouseKeyOnBots, bunkhouseKeyFleaSale.
+// Config: bunkhouseKeyOnBots, bunkhouseKeyFleaSale, customsKeysOnBots, customsKeysFleaSale (KeysOnBots.cs).
 internal static class BunkhouseKey
 {
     internal static readonly MongoId Tpl = new("68e95f4fa4a577e907015787");
@@ -46,6 +47,8 @@ internal static class BunkhouseKey
     {
         public bool bunkhouseKeyOnBots { get; set; } = true;
         public bool bunkhouseKeyFleaSale { get; set; } = true;
+        public bool customsKeysOnBots { get; set; } = true; // ZB-1013 and Security post keys, see KeysOnBots.cs
+        public bool customsKeysFleaSale { get; set; } = false; // same keys on the flea; live does not allow it
     }
 
     internal static Config Load()
@@ -90,95 +93,7 @@ public class BunkhouseKeyFlea(
             logger.Warning($"[FumsCustoms] bunkhouse key: item blacklist cache not reachable ({e.Message}); the flea list is still fixed");
         }
         if (fromConfig || fromCache)
-            logger.Info($"[FumsCustoms] Reshala's bunkhouse key can be sold on the flea, as on live (removed from the item blacklist: config {fromConfig}, cache {fromCache})");
+            logger.Debug($"[FumsCustoms] Reshala's bunkhouse key can be sold on the flea, as on live (removed from the item blacklist: config {fromConfig}, cache {fromCache})");
         return Task.CompletedTask;
-    }
-}
-
-[Injectable(TypePriority = OnLoadOrder.PostLoad + 102), UsedImplicitly]
-public class BunkhouseKeyBots(
-    BotGeneratorHelper botGeneratorHelper,
-    ItemHelper itemHelper,
-    ISptLogger<BunkhouseKeyBots> logger)
-    : IOnLoad
-{
-    public Task OnLoadAsync(CancellationToken cancellationToken)
-    {
-        if (ClassicCoexist.FumsOff) return Task.CompletedTask; // CustomsClassic installed
-        if (!BunkhouseKey.Load().bunkhouseKeyOnBots) return Task.CompletedTask;
-        if (!itemHelper.GetItem(BunkhouseKey.Tpl).Key)
-        {
-            logger.Warning("[FumsCustoms] Reshala's bunkhouse key is not in the item database (is WTT-ContentBackport installed?); bots will not carry it");
-            return Task.CompletedTask;
-        }
-        try
-        {
-            BunkhouseKeyLootPatch.Init(botGeneratorHelper, itemHelper, logger);
-            new BunkhouseKeyLootPatch().Enable();
-            logger.Info("[FumsCustoms] Reshala's bunkhouse key on bots at live rates: Reshala 5.31%, Birdeye 0.032%, scavs 0.0034%");
-        }
-        catch (Exception e)
-        {
-            logger.Error($"[FumsCustoms] bunkhouse key bot loot not enabled: {e.Message}");
-        }
-        return Task.CompletedTask;
-    }
-}
-
-// Enabled once, by hand, from BunkhouseKeyBots.
-[IgnoreAutoPatch]
-public class BunkhouseKeyLootPatch : AbstractPatch
-{
-    private sealed record Rule(double Chance, HashSet<EquipmentSlots> Slots);
-
-    // role (lowercase) -> live chance per bot, live container first, then fallbacks
-    private static readonly Dictionary<string, Rule> Rules = new()
-    {
-        ["bossbully"] = new(44.0 / 828, [EquipmentSlots.Pockets, EquipmentSlots.TacticalVest, EquipmentSlots.Backpack]),
-        ["followerbirdeye"] = new(1.0 / 3099, [EquipmentSlots.Backpack, EquipmentSlots.Pockets, EquipmentSlots.TacticalVest]),
-        ["assault"] = new(2.0 / 58157, [EquipmentSlots.Backpack, EquipmentSlots.Pockets, EquipmentSlots.TacticalVest]),
-    };
-
-    private static BotGeneratorHelper? _helper;
-    private static ItemHelper? _items;
-    private static ISptLogger<BunkhouseKeyBots>? _log;
-
-    internal static void Init(BotGeneratorHelper helper, ItemHelper items, ISptLogger<BunkhouseKeyBots> log)
-    {
-        _helper = helper;
-        _items = items;
-        _log = log;
-    }
-
-    protected override MethodBase? GetTargetMethod() =>
-        AccessTools.Method(typeof(BotLootGenerator), nameof(BotLootGenerator.GenerateLoot));
-
-    [PatchPrefix, HarmonyPriority(Priority.First)]
-    public static void Prefix(MongoId botId, BotGenerationDetails botGenerationDetails, BotBaseInventory botInventory)
-    {
-        try
-        {
-            if (_helper == null || _items == null || botInventory?.Items == null) return;
-            var role = botGenerationDetails?.RoleLowercase ?? botGenerationDetails?.Role?.ToLowerInvariant();
-            if (role == null || !Rules.TryGetValue(role, out var rule)) return;
-            if (Random.Shared.NextDouble() >= rule.Chance) return;
-            if (botInventory.Items.Any(i => i.Template == BunkhouseKey.Tpl)) return;
-            var (found, template) = _items.GetItem(BunkhouseKey.Tpl);
-            if (!found || template == null) return;
-            var id = new MongoId();
-            var key = new Item
-            {
-                Id = id,
-                Template = BunkhouseKey.Tpl,
-                Upd = _helper.GenerateExtraPropertiesForItem(template, role),
-            };
-            var result = _helper.AddItemWithChildrenToEquipmentSlot(botId, rule.Slots, id, BunkhouseKey.Tpl, [key], botInventory);
-            if (result == ItemAddedResult.SUCCESS) _log?.Info($"[FumsCustoms] bunkhouse key given to a {role} ({rule.Slots.First()})");
-            else _log?.Warning($"[FumsCustoms] bunkhouse key rolled for a {role} but not placed: {result}");
-        }
-        catch (Exception e)
-        {
-            _log?.Warning($"[FumsCustoms] bunkhouse key not added to a bot: {e.Message}");
-        }
     }
 }

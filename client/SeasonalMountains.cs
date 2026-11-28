@@ -13,7 +13,9 @@ namespace Fums.Customs.Client
     // controller. Summer is the material the scene already uses; the other five come
     // from customs_bp_seasons.bundle (loaded once, kept for the session).
     // MountainViewAngleController (also 1.3-only: a Transform ref and 76, 179, 8.5) is
-    // not reproduced; the mountains keep live's saved placement.
+    // not reproduced; the mountains keep live's saved placement. Without it they leave a
+    // flat grey band on the horizon from high places, and 0.16.9 has no ring, so the
+    // HorizonMountains config (default off) hides the whole ring at scene load.
     internal static class SeasonalMountains
     {
         private const string Root = "SkyboxMountains_Customs";
@@ -33,6 +35,12 @@ namespace Fums.Customs.Client
                 foreach (var g in scene.GetRootGameObjects())
                     if (g.name == Root) { root = g; break; }
                 if (root == null) return;
+                if (!Plugin.HorizonMountains.Value)
+                {
+                    root.SetActive(false);
+                    Plugin.Verbose("Horizon mountains hidden (HorizonMountains off)");
+                    return;
+                }
                 Renderers.Clear();
                 Renderers.AddRange(root.GetComponentsInChildren<MeshRenderer>(true));
                 _summer = Renderers.Count > 0 ? Renderers[0].sharedMaterial : null;

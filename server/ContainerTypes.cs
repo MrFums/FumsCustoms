@@ -57,7 +57,7 @@ public class ContainerTypes(
                                 d[newTpl + suffix] = text;
                     return d;
                 });
-            logger.Info($"[FumsCustoms] 1.x container types: {added} added, {existing} already defined by another mod");
+            logger.Debug($"[FumsCustoms] 1.x container types: {added} added, {existing} already defined by another mod");
         }
         catch (Exception e)
         {

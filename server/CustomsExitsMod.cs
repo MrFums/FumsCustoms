@@ -137,7 +137,7 @@ public class CustomsExitsMod(
             int locales = AddLocales(data, toOld);
             var fresh = data.exits.Select(e => e.Name).Concat(data.allExtracts.Select(e => e.Name))
                 .Where(n => n != null && n.StartsWith("ex_customs_")).Distinct();
-            logger.Info($"[FumsCustoms] 1.3 Customs exits: {data.exits.Count} exits, {data.allExtracts.Count} extracts, " +
+            logger.Debug($"[FumsCustoms] 1.3 Customs exits: {data.exits.Count} exits, {data.allExtracts.Count} extracts, " +
                         $"{data.secretExits.Count} secret; {renamed} given their 0.16.9 names; new in 1.3: {string.Join(", ", fresh)}; " +
                         $"locale keys added in {locales} languages");
         }
@@ -159,7 +159,7 @@ public class CustomsExitsMod(
             var applied = new List<string>();
             if (respectSpawnMods && spawnMods.Count > 0)
             {
-                logger.Info($"[FumsCustoms] bot spawn mod(s) loaded ({string.Join(", ", spawnMods)}): Customs keeps SPT's bot count, " +
+                logger.Debug($"[FumsCustoms] bot spawn mod(s) loaded ({string.Join(", ", spawnMods)}): Customs keeps SPT's bot count, " +
                             "waves and boss table so they decide spawns");
             }
             else
@@ -172,7 +172,7 @@ public class CustomsExitsMod(
             if (data.EscapeTimeLimit is double minutes) { applied.Add($"raid time {copy.EscapeTimeLimit} -> {minutes} min"); copy.EscapeTimeLimit = minutes; }
             if (data.EscapeTimeLimitPVE is int pve) copy.EscapeTimeLimitPVE = pve;
             if (data.MaxItemCountInLocation is { Count: > 0 } caps) { copy.MaxItemCountInLocation = caps; applied.Add($"{caps.Count} per-raid item caps"); }
-            logger.Info("[FumsCustoms] 1.x Customs raid settings: " + string.Join(", ", applied));
+            logger.Debug("[FumsCustoms] 1.x Customs raid settings: " + string.Join(", ", applied));
         }
         catch (Exception e)
         {

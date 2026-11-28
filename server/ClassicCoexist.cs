@@ -50,7 +50,7 @@ public class ClassicCoexist(IServiceProvider provider, ISptLogger<ClassicCoexist
             return Task.CompletedTask;
         }
         if (Together)
-            logger.Info("[FumsCustoms] CustomsClassic is installed too: Customs offers Vanilla, Fums and Classic");
+            logger.Debug("[FumsCustoms] CustomsClassic is installed too: Customs offers Vanilla, Fums and Classic");
         Declare();
         return Task.CompletedTask;
     }
@@ -66,7 +66,7 @@ public class ClassicCoexist(IServiceProvider provider, ISptLogger<ClassicCoexist
             var providers = declare == null ? null : provider.GetService(type!);
             if (providers == null) return;
             declare!.Invoke(providers, ["bigmap", ClientPluginGuid]);
-            logger.Info($"[FumsCustoms] declared {ClientPluginGuid} as Customs' client plugin to MapVariants");
+            logger.Debug($"[FumsCustoms] declared {ClientPluginGuid} as Customs' client plugin to MapVariants");
         }
         catch (Exception error)
         {

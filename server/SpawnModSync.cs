@@ -87,7 +87,7 @@ public class SpawnModSync(IServiceProvider services, LocationTable locationTable
             catch (Exception e) { logger.Warning($"[FumsCustoms] spawn sync at raid start not enabled: {e.Message}"); }
         }
         if (rerun.Count > 0)
-            logger.Info($"[FumsCustoms] spawns of {string.Join(", ", rerun)} added again after the bot spawn mods loaded");
+            logger.Debug($"[FumsCustoms] spawns of {string.Join(", ", rerun)} added again after the bot spawn mods loaded");
         return Task.CompletedTask;
     }
 

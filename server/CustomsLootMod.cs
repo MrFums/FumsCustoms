@@ -366,7 +366,7 @@ public class CustomsLootMod(
                 carried++;
                 if (samples.Count < 5) samples.Add($"forced {SpotKey(sp)}");
             }
-        if (carried > 0) logger.Info($"[FumsCustoms] kept {carried} loose-loot addition(s) from other mods, e.g. {string.Join("; ", samples)}");
+        if (carried > 0) logger.Debug($"[FumsCustoms] kept {carried} loose-loot addition(s) from other mods, e.g. {string.Join("; ", samples)}");
         return carried;
     }
 
@@ -435,7 +435,7 @@ public class CustomsLootMod(
         }
         ll.Spawnpoints = kept;
         ll.SpawnpointsForced = forced;
-        logger.Info($"[FumsCustoms] Customs loose loot: {kept.Count} spots ({old} old, {unseen} unseen-new, {extra} extra item(s), {carried} from other mods), " +
+        logger.Debug($"[FumsCustoms] Customs loose loot: {kept.Count} spots ({old} old, {unseen} unseen-new, {extra} extra item(s), {carried} from other mods), " +
                     $"{forced.Count} forced; dropped {droppedSpots} spot(s) and {droppedForced} forced spot(s) with no known items");
         return ll;
     }
@@ -507,7 +507,7 @@ public class CustomsLootMod(
             sc.StaticWeapons = [.. sc.StaticWeapons, .. addW];
             sc.StaticForced = [.. sc.StaticForced, .. addF];
             if (addC.Count + addW.Count + addF.Count > 0)
-                logger.Info($"[FumsCustoms] kept other mods' Customs containers: {addC.Count} container(s), {addW.Count} static weapon(s), {addF.Count} forced item(s)");
+                logger.Debug($"[FumsCustoms] kept other mods' Customs containers: {addC.Count} container(s), {addW.Count} static weapon(s), {addF.Count} forced item(s)");
         }
         int before = sc.StaticContainers.Count() + sc.StaticWeapons.Count();
         sc.StaticContainers = sc.StaticContainers
@@ -547,7 +547,7 @@ public class CustomsLootMod(
                 carried += add.Count;
             }
             if (carried + skipped > 0)
-                logger.Info($"[FumsCustoms] container pools: kept {carried} mod-only item(s) other mods added; left {skipped} 1.x item(s) to the 1.x pools");
+                logger.Debug($"[FumsCustoms] container pools: kept {carried} mod-only item(s) other mods added; left {skipped} 1.x item(s) to the 1.x pools");
         }
         foreach (var details in sl.Values)
             details.ItemDistribution = details.ItemDistribution.Where(d => Known(d.Tpl)).ToList();
@@ -598,9 +598,9 @@ public class CustomsLootMod(
             var expected = unknown.Where(OnlyIn1x.Contains).ToList();
             var other = unknown.Where(id => !OnlyIn1x.Contains(id)).ToList();
             if (unknown.Count == 0)
-                logger.Success("[FumsCustoms] every 1.x Customs loot item exists in the item database");
+                logger.Debug("[FumsCustoms] every 1.x Customs loot item exists in the item database");
             if (expected.Count > 0)
-                logger.Info($"[FumsCustoms] {expected.Count} 1.x Customs loot item type(s) will not spawn: " + string.Join(", ", expected) +
+                logger.Debug($"[FumsCustoms] {expected.Count} 1.x Customs loot item type(s) will not spawn: " + string.Join(", ", expected) +
                             ". This is not an error and is expected: these items (lore notes, a voice recorder and a barter item) " +
                             "exist only in the 1.x game, and neither SPT 4.1 nor WTT-ContentBackport has them. All other loot spawns normally.");
             if (other.Count > 0)

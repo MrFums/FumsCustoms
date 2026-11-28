@@ -1,10 +1,14 @@
 # Changelog
 
-## 1.0.7-beta.1
+## 1.0.7
 
 - Fixed the sniper zones making no gunshot sound, so their shots felt delayed.
 - Fixed graffiti and other painted decals not showing, including the sniper zone warning signs.
 - Fixed doors not showing a hit effect when shot.
+- Fixed the ZB-1013 key and Security post key being almost impossible to find: bots now carry them at live rates.
+- Fixed a flat grey band on the horizon when looking out from high places.
+- Added `customsKeysFleaSale` to the server config (off by default, as on live) to allow the ZB-1013 and Security post keys on the flea.
+- The server log is much quieter.
 
 ## 1.0.6
 

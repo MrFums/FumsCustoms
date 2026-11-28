@@ -9,5 +9,7 @@
   "respectBotSpawnMods": true,
   "bunkhouseKeyOnBots": true,
   "bunkhouseKeyFleaSale": true,
+  "customsKeysOnBots": true,
+  "customsKeysFleaSale": false,
   "logRaidSpawns": false
 }
